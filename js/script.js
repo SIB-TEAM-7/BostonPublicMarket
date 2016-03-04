@@ -4,6 +4,6 @@ function activateModal() {
 
  window.onload = function(){
 
- 	//$('#myModal').modal('toggle');
+ 	$('#myModal').modal('toggle');
 
  }

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<!-- saved from url=(0057)http://bostonpublicmarket.org/frameok_map_directions.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><link type="text/css" rel="stylesheet" href="css"><style type="text/css">.gm-style .gm-style-cc span,.gm-style .gm-style-cc a,.gm-style .gm-style-mtc div{font-size:10px}</style><style type="text/css">@media print {  .gm-style .gmnoprint, .gmnoprint {    display:none  }}@media screen {  .gm-style .gmnoscreen, .gmnoscreen {    display:none  }}</style><style type="text/css">.gm-style{font-family:Roboto,Arial,sans-serif;font-size:11px;font-weight:400;text-decoration:none}.gm-style img{max-width:none}</style>
+		<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+		<meta charset="utf-8">
+		<title>Visit the Market</title>
+		<style>
+			@font-face {
+				font-family: "bpm-icons";
+				src: url( '/fonts/bpm-icons.eot?r=2');
+				src: url( '/fonts/bpm-icons.eot?r=2#iefix') format('embedded-opentype'),
+					url( '/fonts/bpm-icons.woff2?r=2') format('woff2'),
+					url( '/fonts/bpm-icons.woff?r=2') format('woff'),
+					url( '/fonts/bpm-icons.ttf?r=2') format('truetype'),
+					url( '/fonts/bpm-icons.svg?r=2#icomoon') format('svg');
+				font-weight: normal;
+				font-style: normal;
+			}
+			html, body, #map-canvas {
+				height: 100%;
+				margin: 0px;
+				padding: 0px;
+				font-family: Arial, sans-serif;
+			}
+			#panel {
+				position: absolute;
+				bottom: 15px;
+				left: 50%;
+				z-index: 5;
+				font-size: 0;
+			}
+			.mode-button {
+				background-color: white;
+				margin-left: -1px;
+				padding: 5px 20px 4px 20px;
+				border: 1px solid #555;
+				font-size: 16px;
+				font-weight: 700;
+				text-decoration: none;
+				text-transform: uppercase;
+				color: #555;
+			}
+			.mode-button.selected {
+				background-color: #555;
+				color: white;
+			}
+			.mode-select {
+				display: none;
+				background-color: white;
+				font-size: 20px;
+				font-weight: 700;
+				color: #555;
+				-webkit-box-shadow: 0 0 14px rgba(0,0,0,0.1), 0 0 2px rgba(0,0,0,0.1);
+				-moz-box-shadow: 0 0 14px rgba(0,0,0,0.1), 0 0 2px rgba(0,0,0,0.1);
+				box-shadow: 0 0 14px rgba(0,0,0,0.1), 0 0 2px rgba(0,0,0,0.1);
+				border-color: rgb(166, 166, 166);
+			}
+			#full-map {
+				display: block;
+				position: absolute;
+				right: 12px;
+				bottom: 25px;
+				padding: 4px 12px;
+				border: 1px solid rgb(166, 166, 166);
+				z-index: 5;
+				font-size: 32px;
+				color: #555;
+				text-decoration: none;
+				background-color: white;
+			}
+			#full-map:active {
+				background-color: #555;
+				color: white;
+			}
+			*[class^="icon-"], *[class*=" icon-"] {
+				font-family: "bpm-icons";
+				speak: none;
+				font-style: normal;
+				font-weight: normal;
+				font-variant: normal;
+				text-transform: none;
+				line-height: 1;
+				
+				/* Better Font Rendering =========== */
+				-webkit-font-smoothing: antialiased;
+				-moz-osx-font-smoothing: grayscale;
+			}
+			.icon-logo-simple:before {
+				position: relative;
+				top: 1px;
+				content: "\e600";
+			}
+			.icon-external:before {
+				content: "\e605";
+			}
+			.screen {
+				display: none;
+				background-color: #222;
+				position: absolute;
+				top: 0;
+				width: 100%;
+				height: 100%;
+				text-align: center;
+				color: white;
+			}
+			.screen .text-box {
+				display: inline-block;
+				position: absolute;
+				top: 42.5%;
+				left: 0;
+				right: 0;
+				margin: 0;
+				padding: 10px;
+				z-index: 999;
+				background-color: #222;
+			}
+			#fail-screen {
+				z-index: 3;
+			}
+			.mode-button, .mode-select, #full-map {
+				-webkit-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+			}
+			@media only screen and (max-width: 48em) {
+				.mode-button {
+					display: none;
+				}
+				.mode-select {
+					display: block;
+				}
+				#full-map {
+					font-size: 26px;
+					padding: 4px 10px;
+					right: 7px;
+					bottom: 14px;
+					-webkit-box-shadow: 0 0 14px rgba(0,0,0,0.1), 0 0 2px rgba(0,0,0,0.1);
+					-moz-box-shadow: 0 0 14px rgba(0,0,0,0.1), 0 0 2px rgba(0,0,0,0.1);
+					box-shadow: 0 0 14px rgba(0,0,0,0.1), 0 0 2px rgba(0,0,0,0.1);
+				}
+			}
+		</style>
+		<script src="js"></script>
+		<script src="jquery-1.11.3.min.js"></script>
+		<script>/* <![CDATA[ */
+
+var directionsRenderer;
+var directionsService = new google.maps.DirectionsService();
+var map;
+var start = null;
+var end = new google.maps.LatLng(42.361484,-71.057547);
+var center = new google.maps.LatLng(42.362200, -71.057480);
+var zoom = 18;
+var markerWidth = 160; // 160 or 180
+var markerHeight = 208; // 208 or 234
+var startMarker;
+var endMarker;
+var centerMarker;
+
+google.maps.event.addDomListener(window, 'load', initialize);
+
+$(function() {
+	$('#full-map').attr('href', 'http://maps.apple.com/?daddr=' + end.lat() + ',' + end.lng());
+})
+
+function initialize() {
+	var canvas = $('#map-canvas')[0];
+	
+	function resize() {
+		$('#panel').css('margin-left', -$('#panel').width()/2 + 'px');
+		setTimeout(reCenterMap, 0);
+	}
+	$(window).resize(resize);
+	setTimeout(resize, 0);
+	
+	// When an option is selected, act as if a .mode-button was clicked
+	$('.mode-select').change(function() {
+		var val = $(this).val();
+		$('.mode-button[data-mode="'+val+'"]').click();
+	});
+	
+	// When a .mode-button is clicked, update the selected mode, and update the map
+	$('.mode-button').click(function() {
+		$('.mode-button').removeClass('selected');
+		$(this).addClass('selected');
+		
+		var selectedMode = getMode();
+		$('.mode-select').val(selectedMode);
+		updateMap(selectedMode);
+	});
+	
+	directionsRenderer = new google.maps.DirectionsRenderer({
+		suppressMarkers: true
+	});
+	map = new google.maps.Map(canvas, {
+		center: center,
+		zoom: zoom,
+		scrollwheel: false,
+		panControl: false,
+		zoomControl: true,
+		mapTypeControl: false,
+		scaleControl: false,
+		streetViewControl: true,
+		overviewMapControl: false,
+		streetViewControlOptions: {
+			position: google.maps.ControlPosition.RIGHT_CENTER
+		},
+		zoomControlOptions: {
+			position: google.maps.ControlPosition.RIGHT_CENTER,
+			style: google.maps.ZoomControlStyle.DEFAULT
+		}
+	});
+	
+	centerMarker = new google.maps.Marker({
+		position: center,
+		icon: {
+			url: '/bpm-map-icon-end.svg',
+			scaledSize: {width: markerWidth, height: markerHeight}
+		},
+		title: 'Boston Public Market',
+		map: map
+	});	
+}
+
+function updateMap(selectedMode) {
+	hideDirectionMarkers();
+	if (selectedMode === 'MARKET_MAP') {
+		directionsRenderer.setMap(null);
+		centerMarker.setVisible(true);
+		$('.screen').hide();
+		map.panTo(center);
+		map.setZoom(zoom);
+	} else {
+		directionsRenderer.setMap(map);
+		setTimeout(getLocation, 0);
+	}
+}
+
+function getLocation() {
+	if (navigator.geolocation) {
+		if (!start) {$('#wait-screen').show();}
+		
+		navigator.geolocation.getCurrentPosition(function(position) {
+			start = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+			$('.screen').hide();
+			calcRoute();
+		});
+	} else {
+		$('#fail-screen').show();
+	}
+}
+
+function calcRoute() {
+	if (start) {
+		var selectedMode = getMode();
+		var request = {
+			origin: start,
+			destination: end,
+			travelMode: google.maps.TravelMode[selectedMode]
+		};
+		showDirectionMarkers();
+		directionsService.route(request, function(response, status) {
+			if (status == google.maps.DirectionsStatus.OK) {
+				directionsRenderer.setDirections(response);
+			}
+		});
+	}
+}
+
+function hideDirectionMarkers() {
+	startMarker && startMarker.setVisible(false);
+	endMarker && endMarker.setVisible(false);
+}
+function showDirectionMarkers() {
+	if (!endMarker) {
+		endMarker = new google.maps.Marker({
+			position: end,
+			icon: {
+				url: '/bpm-map-icon-end.svg',
+				scaledSize: {width: markerWidth, height: markerHeight}
+			},
+			title: 'Boston Public Market',
+			map: map
+		});
+	} else {
+		endMarker.setPosition(end);
+	}
+	if (!startMarker) {
+		startMarker = new google.maps.Marker({
+			position: start,
+			icon: {
+				url: '/bpm-map-icon-start.svg',
+				scaledSize: {width: markerWidth, height: markerHeight}
+			},
+			title: 'Boston Public Market',
+			map: map
+		});
+	} else {
+		startMarker.setPosition(start);
+	}
+	centerMarker.setVisible(false);
+	startMarker.setVisible(true);
+	endMarker.setVisible(true);
+}
+
+function getMode() {
+	return $('.mode-button.selected').attr('data-mode') || 'MARKET_MAP';
+}
+
+function reCenterMap() {
+	if (getMode() !== 'MARKET_MAP' && start && end) {
+		map.panTo(new google.maps.LatLng(
+			(start.lat() + end.lat())/2,
+			(start.lng() + end.lng())/2
+		));
+	} else {
+		map.panTo(center);
+	}
+}
+
+
+
+		/* ]]> */</script>
+	<script type="text/javascript" charset="UTF-8" src="common.js"></script><script type="text/javascript" charset="UTF-8" src="map.js"></script><script type="text/javascript" charset="UTF-8" src="util.js"></script><script type="text/javascript" charset="UTF-8" src="marker.js"></script><script type="text/javascript" charset="UTF-8" src="onion.js"></script><script type="text/javascript" charset="UTF-8" src="controls.js"></script><script type="text/javascript" charset="UTF-8" src="stats.js"></script></head>
+	<body>
+		<div id="panel" style="margin-left: -318px;">
+			<a class="mode-button" data-mode="DRIVING" href="javascript:void(0)">By Car</a>
+			<a class="mode-button" data-mode="WALKING" href="javascript:void(0)">By Foot</a>
+			<a class="mode-button" data-mode="BICYCLING" href="javascript:void(0)">By Bicycle</a>
+			<a class="mode-button" data-mode="TRANSIT" href="javascript:void(0)">By MBTA</a>
+			<a class="mode-button selected" data-mode="MARKET_MAP" href="javascript:void(0)">
+				<span class="icon-logo-simple"></span> Market Map
+			</a>
+			<select class="mode-select">
+				<option value="MARKET_MAP" selected="">Market Map</option>
+				<option value="DRIVING">By Car</option>
+				<option value="WALKING">By Foot</option>
+				<option value="BICYCLING">By Bicycle</option>
+				<option value="TRANSIT">By MBTA</option>
+			</select>
+		</div>
+		<a id="full-map" target="_blank" href="http://maps.apple.com/?daddr=42.361484,-71.057547">
+			<span class="icon-external"></span>
+		</a>
+		<div id="map-canvas" style="position: relative; overflow: hidden; transform: translateZ(0px); background-color: rgb(229, 227, 223);"><div class="gm-style" style="position: absolute; left: 0px; top: 0px; overflow: hidden; width: 100%; height: 100%; z-index: 0;"><div style="position: absolute; left: 0px; top: 0px; overflow: hidden; width: 100%; height: 100%; z-index: 0; cursor: url(&quot;https://maps.gstatic.com/mapfiles/openhand_8_8.cur&quot;) 8 8, default;"><div style="position: absolute; left: 0px; top: 0px; z-index: 1; width: 100%; transform-origin: 0px 0px 0px; transform: matrix(1, 0, 0, 1, 0, 0);"><div style="transform: translateZ(0px); position: absolute; left: 0px; top: 0px; z-index: 100; width: 100%;"><div style="position: absolute; left: 0px; top: 0px; z-index: 0;"><div aria-hidden="true" style="position: absolute; left: 0px; top: 0px; z-index: 1; visibility: inherit;"><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 586px; top: 198px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 330px; top: 198px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 586px; top: -58px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 586px; top: 454px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 842px; top: 198px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 330px; top: 454px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 330px; top: -58px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 842px; top: -58px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 842px; top: 454px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 1098px; top: 198px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 74px; top: 198px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 1098px; top: 454px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 1098px; top: -58px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 74px; top: 454px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 74px; top: -58px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 1354px; top: 198px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: -182px; top: 198px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: -182px; top: -58px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 1354px; top: -58px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: -182px; top: 454px;"></div><div style="width: 256px; height: 256px; transform: translateZ(0px); position: absolute; left: 1354px; top: 454px;"></div></div></div></div><div style="transform: translateZ(0px); position: absolute; left: 0px; top: 0px; z-index: 101; width: 100%;"></div><div style="transform: translateZ(0px); position: absolute; left: 0px; top: 0px; z-index: 102; width: 100%;"></div><div style="transform: translateZ(0px); position: absolute; left: 0px; top: 0px; z-index: 103; width: 100%;"><div style="position: absolute; left: 0px; top: 0px; z-index: -1;"><div aria-hidden="true" style="position: absolute; left: 0px; top: 0px; z-index: 1; visibility: inherit;"><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 586px; top: 198px;"><canvas draggable="false" height="512" width="512" style="-webkit-user-select: none; position: absolute; left: 0px; top: 0px; height: 256px; width: 256px;"></canvas></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 330px; top: 198px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 586px; top: -58px;"><canvas draggable="false" height="512" width="512" style="-webkit-user-select: none; position: absolute; left: 0px; top: 0px; height: 256px; width: 256px;"></canvas></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 586px; top: 454px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 842px; top: 198px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 330px; top: 454px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 330px; top: -58px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 842px; top: -58px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 842px; top: 454px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 1098px; top: 198px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 74px; top: 198px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 1098px; top: 454px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 1098px; top: -58px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 74px; top: 454px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 74px; top: -58px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 1354px; top: 198px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: -182px; top: 198px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: -182px; top: -58px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 1354px; top: -58px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: -182px; top: 454px;"></div><div style="width: 256px; height: 256px; overflow: hidden; transform: translateZ(0px); position: absolute; left: 1354px; top: 454px;"></div></div></div></div><div style="position: absolute; left: 0px; top: 0px; z-index: 0;"><div aria-hidden="true" style="position: absolute; left: 0px; top: 0px; z-index: 1; visibility: inherit;"><div style="transform: translateZ(0px); position: absolute; left: 586px; top: 198px; transition: opacity 200ms ease-out;"><img src="vt" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: 330px; top: 198px; transition: opacity 200ms ease-out;"><img src="vt(1)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: 586px; top: -58px; transition: opacity 200ms ease-out;"><img src="vt(2)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: 586px; top: 454px; transition: opacity 200ms ease-out;"><img src="vt(3)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: 842px; top: 198px; transition: opacity 200ms ease-out;"><img src="vt(4)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: 330px; top: 454px; transition: opacity 200ms ease-out;"><img src="vt(5)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: 330px; top: -58px; transition: opacity 200ms ease-out;"><img src="vt(6)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: 842px; top: -58px; transition: opacity 200ms ease-out;"><img src="vt(7)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: 1098px; top: 198px; transition: opacity 200ms ease-out;"><img src="vt(8)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: 74px; top: 198px; transition: opacity 200ms ease-out;"><img src="vt(9)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: 842px; top: 454px; transition: opacity 200ms ease-out;"><img src="vt(10)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: 1098px; top: 454px; transition: opacity 200ms ease-out;"><img src="vt(11)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: 74px; top: 454px; transition: opacity 200ms ease-out;"><img src="vt(12)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: 1098px; top: -58px; transition: opacity 200ms ease-out;"><img src="vt(13)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: 74px; top: -58px; transition: opacity 200ms ease-out;"><img src="vt(14)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: 1354px; top: 198px; transition: opacity 200ms ease-out;"><img src="vt(15)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: -182px; top: 198px; transition: opacity 200ms ease-out;"><img src="vt(16)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: -182px; top: -58px; transition: opacity 200ms ease-out;"><img src="vt(17)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: 1354px; top: -58px; transition: opacity 200ms ease-out;"><img src="vt(18)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: -182px; top: 454px; transition: opacity 200ms ease-out;"><img src="vt(19)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="transform: translateZ(0px); position: absolute; left: 1354px; top: 454px; transition: opacity 200ms ease-out;"><img src="vt(20)" draggable="false" alt="" style="position: absolute; left: 0px; top: 0px; width: 256px; height: 256px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div></div></div></div><div style="position: absolute; left: 0px; top: 0px; z-index: 2; width: 100%; height: 100%;"></div><div style="position: absolute; left: 0px; top: 0px; z-index: 3; width: 100%; height: 100%;"></div><div style="position: absolute; left: 0px; top: 0px; z-index: 4; width: 100%; transform-origin: 0px 0px 0px; transform: matrix(1, 0, 0, 1, 0, 0);"><div style="transform: translateZ(0px); position: absolute; left: 0px; top: 0px; z-index: 104; width: 100%;"></div><div style="transform: translateZ(0px); position: absolute; left: 0px; top: 0px; z-index: 105; width: 100%;"></div><div style="transform: translateZ(0px); position: absolute; left: 0px; top: 0px; z-index: 106; width: 100%;"></div><div style="transform: translateZ(0px); position: absolute; left: 0px; top: 0px; z-index: 107; width: 100%;"></div></div></div><div style="padding: 15px 21px; border: 1px solid rgb(171, 171, 171); font-family: Roboto, Arial, sans-serif; color: rgb(34, 34, 34); box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 16px; z-index: 10000002; display: none; width: 256px; height: 148px; position: absolute; left: 570px; top: 210px; background-color: white;"><div style="padding: 0px 0px 10px; font-size: 16px;">Map Data</div><div style="font-size: 13px;">Map data ©2016 Google</div><div style="width: 13px; height: 13px; overflow: hidden; position: absolute; opacity: 0.7; right: 12px; top: 12px; z-index: 10000; cursor: pointer;"><img src="mapcnt6.png" draggable="false" style="position: absolute; left: -2px; top: -336px; width: 59px; height: 492px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div></div><div class="gmnoprint" style="z-index: 1000001; position: absolute; right: 167px; bottom: 0px; width: 121px;"><div draggable="false" class="gm-style-cc" style="-webkit-user-select: none; height: 14px; line-height: 14px;"><div style="opacity: 0.7; width: 100%; height: 100%; position: absolute;"><div style="width: 1px;"></div><div style="width: auto; height: 100%; margin-left: 1px; background-color: rgb(245, 245, 245);"></div></div><div style="position: relative; padding-right: 6px; padding-left: 6px; font-family: Roboto, Arial, sans-serif; font-size: 10px; color: rgb(68, 68, 68); white-space: nowrap; direction: ltr; text-align: right; vertical-align: middle; display: inline-block;"><a style="color: rgb(68, 68, 68); text-decoration: none; cursor: pointer; display: none;">Map Data</a><span>Map data ©2016 Google</span></div></div></div><div class="gmnoscreen" style="position: absolute; right: 0px; bottom: 0px;"><div style="font-family: Roboto, Arial, sans-serif; font-size: 11px; color: rgb(68, 68, 68); direction: ltr; text-align: right; background-color: rgb(245, 245, 245);">Map data ©2016 Google</div></div><div class="gmnoprint gm-style-cc" draggable="false" style="z-index: 1000001; -webkit-user-select: none; height: 14px; line-height: 14px; position: absolute; right: 95px; bottom: 0px;"><div style="opacity: 0.7; width: 100%; height: 100%; position: absolute;"><div style="width: 1px;"></div><div style="width: auto; height: 100%; margin-left: 1px; background-color: rgb(245, 245, 245);"></div></div><div style="position: relative; padding-right: 6px; padding-left: 6px; font-family: Roboto, Arial, sans-serif; font-size: 10px; color: rgb(68, 68, 68); white-space: nowrap; direction: ltr; text-align: right; vertical-align: middle; display: inline-block;"><a href="https://www.google.com/intl/en-US_US/help/terms_maps.html" target="_blank" style="text-decoration: none; cursor: pointer; color: rgb(68, 68, 68);">Terms of Use</a></div></div><div style="display: none; margin: 10px 14px; position: absolute; top: 0px; right: 0px;"></div><div draggable="false" class="gm-style-cc" style="-webkit-user-select: none; height: 14px; line-height: 14px; position: absolute; right: 0px; bottom: 0px;"><div style="opacity: 0.7; width: 100%; height: 100%; position: absolute;"><div style="width: 1px;"></div><div style="width: auto; height: 100%; margin-left: 1px; background-color: rgb(245, 245, 245);"></div></div><div style="position: relative; padding-right: 6px; padding-left: 6px; font-family: Roboto, Arial, sans-serif; font-size: 10px; color: rgb(68, 68, 68); white-space: nowrap; direction: ltr; text-align: right; vertical-align: middle; display: inline-block;"><a target="_new" title="Report errors in the road map or imagery to Google" href="https://www.google.com/maps/@42.3622,-71.05748,18z/data=!10m1!1e1!12b1?source=apiv3&amp;rapsrc=apiv3" style="font-family: Roboto, Arial, sans-serif; font-size: 10px; color: rgb(68, 68, 68); text-decoration: none; position: relative;">Report a map error</a></div></div><div class="gmnoprint gm-bundled-control" draggable="false" controlwidth="28" controlheight="93" style="margin: 10px; -webkit-user-select: none; position: absolute; right: 28px; top: 244px;"><div class="gmnoprint" controlwidth="28" controlheight="55" style="position: absolute; left: 0px; top: 0px;"><div draggable="false" style="-webkit-user-select: none; box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; width: 28px; height: 55px; background-color: rgb(255, 255, 255);"><div title="Zoom in" style="position: relative; width: 28px; height: 27px; left: 0px; top: 0px;"><div style="overflow: hidden; position: absolute; width: 15px; height: 15px; left: 7px; top: 6px;"><img src="tmapctrl_hdpi.png" draggable="false" style="position: absolute; left: 0px; top: 0px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none; width: 120px; height: 54px;"></div></div><div style="position: relative; overflow: hidden; width: 67%; height: 1px; left: 16%; top: 0px; background-color: rgb(230, 230, 230);"></div><div title="Zoom out" style="position: relative; width: 28px; height: 27px; left: 0px; top: 0px;"><div style="overflow: hidden; position: absolute; width: 15px; height: 15px; left: 7px; top: 6px;"><img src="tmapctrl_hdpi.png" draggable="false" style="position: absolute; left: 0px; top: -15px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none; width: 120px; height: 54px;"></div></div></div></div><div class="gm-svpc" controlwidth="28" controlheight="28" style="box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px; border-radius: 2px; width: 28px; height: 28px; cursor: url(&quot;https://maps.gstatic.com/mapfiles/openhand_8_8.cur&quot;) 8 8, default; position: absolute; left: 0px; top: 65px; background-color: rgb(255, 255, 255);"><div style="position: absolute; left: 1px; top: 1px;"></div><div style="position: absolute; left: 1px; top: 1px;"><div aria-label="Street View Pegman Control" style="width: 26px; height: 26px; overflow: hidden; position: absolute; left: 0px; top: 0px;"><img src="cb_scout5_hdpi.png" draggable="false" style="position: absolute; left: -147px; top: -26px; width: 215px; height: 835px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div aria-label="Pegman is on top of the Map" style="width: 26px; height: 26px; overflow: hidden; position: absolute; left: 0px; top: 0px; visibility: hidden;"><img src="cb_scout5_hdpi.png" draggable="false" style="position: absolute; left: -147px; top: -52px; width: 215px; height: 835px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div aria-label="Street View Pegman Control" style="width: 26px; height: 26px; overflow: hidden; position: absolute; left: 0px; top: 0px; visibility: hidden;"><img src="cb_scout5_hdpi.png" draggable="false" style="position: absolute; left: -147px; top: -78px; width: 215px; height: 835px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div></div></div></div><div class="gmnoprint gm-bundled-control gm-bundled-control-on-bottom" draggable="false" controlwidth="0" controlheight="0" style="margin: 10px; -webkit-user-select: none; position: absolute; display: none; bottom: 14px; right: 0px;"><div class="gmnoprint" controlwidth="28" controlheight="0" style="display: none; position: absolute;"><div title="Rotate map 90 degrees" style="width: 28px; height: 28px; overflow: hidden; position: absolute; border-radius: 2px; box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px; cursor: pointer; display: none; background-color: rgb(255, 255, 255);"><img src="tmapctrl4_hdpi.png" draggable="false" style="position: absolute; left: -141px; top: 6px; width: 170px; height: 54px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div class="gm-tilt" style="width: 28px; height: 28px; overflow: hidden; position: absolute; border-radius: 2px; box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px; top: 0px; cursor: pointer; background-color: rgb(255, 255, 255);"><img src="tmapctrl4_hdpi.png" draggable="false" style="position: absolute; left: -141px; top: -13px; width: 170px; height: 54px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div></div></div><div style="margin-left: 5px; margin-right: 5px; z-index: 1000000; position: absolute; left: 0px; bottom: 0px;"><a target="_blank" href="https://maps.google.com/maps?ll=42.3622,-71.05748&amp;z=18&amp;t=m&amp;hl=en-US&amp;gl=US&amp;mapclient=apiv3" title="Click to see this area on Google Maps" style="position: static; overflow: visible; float: none; display: inline;"><div style="width: 66px; height: 26px; cursor: pointer;"><img src="google4_hdpi.png" draggable="false" style="position: absolute; left: 0px; top: 0px; width: 66px; height: 26px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px;"></div></a></div></div></div>
+		<div id="wait-screen" class="screen">
+			<div class="text-box">
+				<h2>retrieving your location...</h2>
+				<p>(you may need to allow your browser to share your location with us)</p>
+			</div>
+		</div>
+		<div id="fail-screen" class="screen">
+			<div class="text-box">
+				<p>your device does not support geolocation.</p>
+			</div>
+		</div> 
+	
+
+</body></html>

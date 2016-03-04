@@ -1,0 +1,24 @@
+/* line 3, ../scss/development.scss */
+table.alog { width: 100%; border-top: 0.5rem solid #CDCEA6; }
+/* line 6, ../scss/development.scss */
+table.alog td { vertical-align: top; }
+/* line 9, ../scss/development.scss */
+table.alog tr { border-top: 1px solid white; }
+/* line 13, ../scss/development.scss */
+table.alog tr.Emergency td { background-color: rgba(255, 204, 1, 0.7); }
+/* line 18, ../scss/development.scss */
+table.alog tr.Alert td { background-color: rgba(255, 204, 1, 0.5); }
+/* line 24, ../scss/development.scss */
+table.alog tr.Critical td { background-color: rgba(206, 60, 61, 0.9); }
+/* line 29, ../scss/development.scss */
+table.alog tr.Error td { background-color: rgba(206, 60, 61, 0.5); }
+/* line 34, ../scss/development.scss */
+table.alog tr.Warning td { background-color: rgba(208, 113, 30, 0.7); }
+/* line 39, ../scss/development.scss */
+table.alog tr.Notice td { background-color: rgba(157, 206, 62, 0.7); }
+/* line 44, ../scss/development.scss */
+table.alog tr.Informational td { background-color: rgba(205, 206, 166, 0.7); }
+/* line 53, ../scss/development.scss */
+table.alog pre { max-height: 10rem; max-width: 100%; overflow: auto; -webkit-transition: max-height 0.25s; -moz-transition: max-height 0.25s; -o-transition: max-height 0.25s; transition: max-height 0.25s; }
+/* line 58, ../scss/development.scss */
+table.alog pre.expanded { max-height: 100rem; }

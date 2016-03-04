@@ -28,6 +28,20 @@
 
 }
 
+.sib-modal-title {
+
+	color: #89A949;
+	font-weight: bold;
+	font-size: 5em;
+	margin-right: 20px;
+}
+
+.sib-banner-hashtag {
+
+	padding-top: 1%;
+
+}
+
 .sib-banner-form {
 
 	margin-left: 100px !important;
@@ -47,15 +61,22 @@
 }
 
 
-.sib-banner-form {
+.sib-banner-modal {
 
-
+	background-color: black;
+	background: black;
 
 }
 
 .sib-banner-button {
 
-	left: 35%;;
+	left: 33%;;
+
+}
+
+.sib-banner-button-close {
+
+	left: 42%;
 
 }
 
@@ -80,6 +101,8 @@
 .login-panel-button {
 
 	left: 32.5%;
+	background-color: #89A949;
+	background: #89A949;
 
 }
 
@@ -91,7 +114,7 @@
 }
 
 .login-panel-heading {
-	background-color: #439BB5;
+	background-color: #89A949;
 	height: 10%;
 	z-index: 99;
 	width: 24.3% !important;
